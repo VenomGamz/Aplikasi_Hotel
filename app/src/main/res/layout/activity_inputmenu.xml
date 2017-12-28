@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.venomgamz.hotelv.inputmenu">
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="37dp"
+        android:text="Nama Kamar"
+        tools:layout_editor_absoluteX="276dp"
+        tools:layout_editor_absoluteY="49dp" />
+
+    <EditText
+        android:id="@+id/inputkamar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textView2"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="13dp"
+        android:ems="10"
+        android:hint="Nama Kamar"
+        android:inputType="textPersonName"
+        android:textAlignment="center"
+        tools:layout_editor_absoluteX="41dp"
+        tools:layout_editor_absoluteY="41dp" />
+
+    <EditText
+        android:id="@+id/inputharga"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/inputkamar"
+        android:layout_alignRight="@+id/inputkamar"
+        android:layout_below="@+id/textView4"
+        android:layout_marginEnd="11dp"
+        android:layout_marginRight="11dp"
+        android:layout_marginTop="15dp"
+        android:ems="10"
+        android:hint="Harga Kamar"
+        android:inputType="textPersonName"
+        android:textAlignment="center"
+        tools:layout_editor_absoluteX="41dp"
+        tools:layout_editor_absoluteY="125dp" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/textView2"
+        android:layout_alignStart="@+id/textView2"
+        android:layout_below="@+id/inputkamar"
+        android:layout_marginTop="16dp"
+        android:text="No Kamar"
+        tools:layout_editor_absoluteX="276dp"
+        tools:layout_editor_absoluteY="143dp" />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/inputnokamar"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="11dp"
+        android:text="Harga"
+        tools:layout_editor_absoluteX="276dp"
+        tools:layout_editor_absoluteY="224dp" />
+
+    <EditText
+        android:id="@+id/inputnokamar"
+        android:layout_width="110dp"
+        android:layout_height="46dp"
+        android:layout_below="@+id/inputkamar"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="39dp"
+        android:ems="10"
+        android:hint="No Kamar"
+        android:inputType="textPersonName"
+        android:textAlignment="center"
+        tools:layout_editor_absoluteX="103dp"
+        tools:layout_editor_absoluteY="214dp" />
+
+    <Button
+        android:id="@+id/save"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/inputharga"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="37dp"
+        android:text="Save"
+        tools:layout_editor_absoluteX="168dp"
+        tools:layout_editor_absoluteY="300dp" />
+
+
+</RelativeLayout>
