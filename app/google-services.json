@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "103314014573",
+    "firebase_url": "https://hotelv-472f1.firebaseio.com",
+    "project_id": "hotelv-472f1",
+    "storage_bucket": "hotelv-472f1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:103314014573:android:7ac72ebd6aef991a",
+        "android_client_info": {
+          "package_name": "com.venomgamz.hotelv"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "103314014573-quv6ck81fiprdgo4t1o89052e0maphk3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.venomgamz.hotelv",
+            "certificate_hash": "c2865ab229708ea83f33c5610a1bc980fca48a82"
+          }
+        },
+        {
+          "client_id": "103314014573-r952h2usgui123n16scgar813guhidfe.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBg4pPzUd2GT2bsZsI8w1cJIb09QtsoF3U"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "103314014573-r952h2usgui123n16scgar813guhidfe.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -25,7 +25,8 @@
             android:name=".infokamar"
             android:label="@string/title_activity_infokamar"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".transaksi"></activity>
+        <activity android:name=".transaksi" />
+        <activity android:name=".laporan"></activity>
     </application>
 
 </manifest>

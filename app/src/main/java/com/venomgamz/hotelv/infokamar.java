@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -26,18 +27,35 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class infokamar extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
-    Dbkonn dbkonn;
     ListView list;
     final Context p=this;
+
+    DatabaseReference databaseReference;
+    List<DHotel> hotels;
+    public static String idhotel;
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_infokamar);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        dbkonn = new Dbkonn(this);
+
+        hotels=new ArrayList<DHotel>();
+        databaseReference= FirebaseDatabase.getInstance().getReference("Hotel");
+        list=(ListView)findViewById(R.id.listkamar);
+
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -52,43 +70,56 @@ public class infokamar extends AppCompatActivity
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
-        load();
+
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Cursor c=dbkonn.selectedMenu(id);
-                final String sendId=c.getString(0);
-                String sendName=c.getString(1);
-                String sendHarga=c.getString(2);
-                String sendNo=c.getString(3);
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 LayoutInflater layoutInflater=LayoutInflater.from(p);
-                View mView =layoutInflater.inflate(R.layout.tampildetailmenu,null);
+                View mView =layoutInflater.inflate(R.layout.activity_inputmenu,null);
                 AlertDialog.Builder alertDialogBuilderUserInput=new AlertDialog.Builder(p);
                 alertDialogBuilderUserInput.setView(mView);
-                final EditText namakamar = (EditText)mView.findViewById(R.id.editkamar);
-                final EditText hargakamar = (EditText)mView.findViewById(R.id.editharga);
-                final EditText nokamar = (EditText)mView.findViewById(R.id.editno);
-                final TextView idmenu = (TextView) mView.findViewById(R.id.textid);
-                final Button update=(Button)mView.findViewById(R.id.btnupdate);
+
+                final DHotel hotel=hotels.get(i);
+                idhotel=hotel.getId();
+                final EditText nama=(EditText)mView.findViewById(R.id.inputkamar);
+                final EditText harga_kamar=(EditText)mView.findViewById(R.id.inputharga);
+                final EditText no_kamar=(EditText)mView.findViewById(R.id.inputnokamar);
+
+                nama.setText(hotel.getNama());
+                harga_kamar.setText(hotel.getHarga());
+                no_kamar.setText(hotel.getNokamar());
+
+                final Button update=(Button)mView.findViewById(R.id.save);
+                update.setText("Delete");
                 update.setOnClickListener(new View.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
-                        dbkonn.update(Long.parseLong(idmenu.getText().toString()),namakamar.getText().toString(),Integer.parseInt(hargakamar.getText().toString()),Integer.parseInt(nokamar.getText().toString()));
-                        Intent intent=new Intent(p,infokamar.class);
-                        startActivity(intent);
+                    public void onClick(View view) {
+                            databaseReference.child(idhotel).removeValue();
+                            Intent intent=new Intent(getApplicationContext(),infokamar.class);
+                            startActivity(intent);
                     }
                 });
-                namakamar.setText(sendName);
-                hargakamar.setText(sendHarga);
-                nokamar.setText(sendNo);
-                idmenu.setText(sendId);
-                alertDialogBuilderUserInput.setCancelable(false).setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+
+                alertDialogBuilderUserInput.setCancelable(false).setPositiveButton("Update", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        dbkonn.deleteMenu(Long.parseLong(sendId));
-                        load();
+                        String tnam=nama.getText().toString().trim();
+                        String tharga=harga_kamar.getText().toString().trim();
+                        String tno=no_kamar.getText().toString().trim();
+
+                        if(!TextUtils.isEmpty(tnam) && !TextUtils.isEmpty(tharga) && !TextUtils.isEmpty(tno)){
+                            databaseReference.child(idhotel).child("nama").setValue(tnam);
+                            databaseReference.child(idhotel).child("harga").setValue(tharga);
+                            databaseReference.child(idhotel).child("nokamar").setValue(tno);
+
+                            Intent intent=new Intent(getApplicationContext(),infokamar.class);
+                            startActivity(intent);
+                        }
+
+
                     }
                 })
                         .setNegativeButton("Batal", new DialogInterface.OnClickListener() {
@@ -98,9 +129,8 @@ public class infokamar extends AppCompatActivity
                             }
                         });
                 AlertDialog alertDialog=alertDialogBuilderUserInput.create();
-                alertDialog.setTitle("Detail Menu");
+                alertDialog.setTitle("Detil");
                 alertDialog.show();
-
             }
         });
     }
@@ -116,25 +146,25 @@ public class infokamar extends AppCompatActivity
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.infokamar, menu);
-        return true;
-    }
+    protected void onStart() {
+        super.onStart();
+        databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                hotels.clear();
+                for(DataSnapshot postSnapshot: dataSnapshot.getChildren()){
+                    DHotel  anggota=postSnapshot.getValue(DHotel.class);
+                    hotels.add(anggota);
+                }
+                ListHotel adapteranggota=new ListHotel(infokamar.this,hotels,databaseReference);
+                list.setAdapter(adapteranggota);
+            }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+            }
+        });
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -143,38 +173,24 @@ public class infokamar extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
+        if (id == R.id.nav_input) {
+            Intent intent = new Intent(getApplicationContext(),infokamar.class);
+            startActivity(intent);
+        } else if (id == R.id.nav_transaksi) {
+            Intent intent = new Intent(getApplicationContext(),transaksi.class);
+            startActivity(intent);
+        } else if (id == R.id.nav_pesan) {
+            Intent intent = new Intent(getApplicationContext(),laporan.class);
+            startActivity(intent);
+        }else if (id == R.id.nav_home) {
             Intent intent = new Intent(getApplicationContext(),MainActivity.class);
             startActivity(intent);
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
-    public void load(){
-        Cursor cursor = null;
-        try {
-            cursor = dbkonn.readAllMenu();
-        } catch (Exception e) {
-            Toast.makeText(this,"salah",Toast.LENGTH_LONG).show();
-        }
-        String[] from = new String[]{"nama_kamar", "harga_kamar", "no_kamar"};
-        int[] to = new int[]{R.id.namakamar, R.id.hargakamar, R.id.nokamar };
-        SimpleCursorAdapter adapter = new SimpleCursorAdapter(infokamar.this, R.layout.listkamar, cursor, from, to);
-        adapter.notifyDataSetChanged();
-        list = (ListView) findViewById(R.id.listkamar);
-        list.setAdapter(adapter);
-    }
+
 }
 

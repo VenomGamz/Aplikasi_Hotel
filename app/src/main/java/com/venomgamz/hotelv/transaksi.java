@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,86 +18,99 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class transaksi extends AppCompatActivity {
-    Dbkonn dbkonn;
     ListView list;
-    final Context p = this;
+    final Context p=this;
+
+    DatabaseReference databaseReference,dRef;
+    List<DHotel> hotels;
+    public static String idhotel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_transaksi);
-        dbkonn = new Dbkonn(this);
-        load();
-        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Cursor c = dbkonn.selectedMenu(id);
-                final String sendId=c.getString(0);
-                final String sendName=c.getString(1);
-                final String sendHarga=c.getString(2);
-                LayoutInflater layoutInflater = LayoutInflater.from(p);
-                View mView = layoutInflater.inflate(R.layout.trans, null);
-                AlertDialog.Builder alertDialogBuilderUserInput = new AlertDialog.Builder(p);
-                alertDialogBuilderUserInput.setView(mView);
-                final EditText jumlah = (EditText) mView.findViewById(R.id.lamamenginap);
-                alertDialogBuilderUserInput.setCancelable(false).setPositiveButton("Tambah", new DialogInterface.OnClickListener() {
-                    @Override
 
-                    public void onClick(DialogInterface dialog, int which) {
-                        dbkonn.insertDataKamar(sendName,Integer.parseInt(sendHarga),Integer.parseInt(jumlah.getText().toString()),Integer.parseInt(sendHarga)*Integer.parseInt(jumlah.getText().toString()));
-                    }
-                })
-                        .setNegativeButton("Batal", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.cancel();
-                            }
-                        });
-                AlertDialog alertDialog = alertDialogBuilderUserInput.create();
-                alertDialog.setTitle("Add to Chart");
-                alertDialog.show();
+        hotels=new ArrayList<DHotel>();
+        databaseReference= FirebaseDatabase.getInstance().getReference("Hotel");
+        dRef= FirebaseDatabase.getInstance().getReference("Transaksi");
+        list=(ListView)findViewById(R.id.listmenu);
+
+
+      list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+          @Override
+          public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+              LayoutInflater layoutInflater=LayoutInflater.from(p);
+              View mView =layoutInflater.inflate(R.layout.pesanan,null);
+              AlertDialog.Builder alertDialogBuilderUserInput=new AlertDialog.Builder(p);
+              alertDialogBuilderUserInput.setView(mView);
+
+              final DHotel hotel=hotels.get(i);
+              final String no=hotel.getNokamar();
+              final String harga=hotel.getHarga();
+              final EditText editnama=(EditText)mView.findViewById(R.id.edttr1);
+              final EditText editnoktp=(EditText)mView.findViewById(R.id.edttr2);
+              final EditText editlama=(EditText)mView.findViewById(R.id.edttr3);
+              alertDialogBuilderUserInput.setCancelable(false).setPositiveButton("Simpan", new DialogInterface.OnClickListener() {
+                  @Override
+                  public void onClick(DialogInterface dialog, int which) {
+                      String nama=editnama.getText().toString().trim();
+                      String ktp=editnoktp.getText().toString().trim();
+                      String lama=editlama.getText().toString().trim();
+                      int hasil=Integer.parseInt(harga)*Integer.parseInt(lama);
+                      String total=Integer.toString(hasil);
+
+                      if(!TextUtils.isEmpty(nama) && !TextUtils.isEmpty(ktp) && !TextUtils.isEmpty(lama)){
+                          String id=dRef.push().getKey();
+                          DKasir kasir=new DKasir(id,no,harga,lama,total,nama,ktp);
+                          dRef.child(id).setValue(kasir);
+                          Intent intent=new Intent(getApplicationContext(),infokamar.class);
+                          startActivity(intent);
+                      }
+
+                  }
+              })
+                      .setNegativeButton("Batal", new DialogInterface.OnClickListener() {
+                          @Override
+                          public void onClick(DialogInterface dialog, int which) {
+                              dialog.cancel();
+                          }
+                      });
+              AlertDialog alertDialog=alertDialogBuilderUserInput.create();
+              alertDialog.setTitle("Input Data Anggota");
+              alertDialog.show();
+          }
+      });
+    }
+    @Override
+    protected void onStart() {
+        super.onStart();
+        databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                hotels.clear();
+                for(DataSnapshot postSnapshot: dataSnapshot.getChildren()){
+                    DHotel  anggota=postSnapshot.getValue(DHotel.class);
+                    hotels.add(anggota);
+                }
+                ListHotel adapteranggota=new ListHotel(transaksi.this,hotels,databaseReference);
+                list.setAdapter(adapteranggota);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
 
             }
         });
-    }
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_buy) {
-            Intent intent = new Intent(getApplicationContext(),Detailkamar.class);
-            startActivity(intent);
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-    public void load(){
-        Cursor cursor = null;
-        try {
-            cursor = dbkonn.readAllMenu();
-        } catch (Exception e) {
-            Toast.makeText(this,"salah",Toast.LENGTH_LONG).show();
-        }
-        String[] from = new String[]{"nama_kamar", "harga_kamar","no_kamar"};
-        int[] to = new int[]{R.id.namakamar, R.id.hargakamar,R.id.nokamar };
-        SimpleCursorAdapter adapter = new SimpleCursorAdapter(transaksi.this, R.layout.listkamar, cursor, from, to);
-        adapter.notifyDataSetChanged();
-        list = (ListView) findViewById(R.id.listmenu);
-        list.setAdapter(adapter);
     }
 
 }
